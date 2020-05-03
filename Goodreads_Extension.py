@@ -12,10 +12,10 @@ from os import path
   
 class AccessGoodReads:
     
-    # This function initializes the class with the 
-    # Google Sheet info and stores all the input keys for 
-    # GoodReads locally. Also takes the name of the CSV
-    # as an output.
+    """This function initializes the class with the 
+    Google Sheet info and stores all the input keys for 
+    GoodReads locally. Also takes the name of the CSV
+    as an output."""
     def __init__(self,ID,RANGE,OUT):
         self.api_key = '3C0gT4Ultg3Rmn5zPaBA'
         self.api_secret = 'yaHyn17KtUCl6HQgkZQEHcQJg81XF7qicVS6GvA7A3Q'
@@ -32,9 +32,9 @@ class AccessGoodReads:
         self.gc = client.GoodreadsClient(self.api_key,self.api_secret)
         self.gc.authenticate(self.oauth_token,self.oauth_signature)
     
-    # Function which uses authenticated client to load GoodReads info.
-    # Takes two parameters, one which chooses whether or not to load the 
-    # data from CSV and the other to choose if we want to save it to CSV.
+    """Function which uses authenticated client to load GoodReads info.
+    Takes two parameters, one which chooses whether or not to load the 
+    data from CSV and the other to choose if we want to save it to CSV."""
     def loadGoodReads(self,savetocsv=True,loadfromCSV=True): 
     
         if not loadfromCSV or not path.exists(self.OutputFile):
@@ -45,9 +45,9 @@ class AccessGoodReads:
             print('Dataframe size = ', self.df.shape)
             print(self.df.head())
             
-            # Iterates over each of the rows in the dataframe and fills the 
-            # Goodreads ID, description, rating and Num ratings. This is then
-            # saved to an output CSV file. 
+            """Iterates over each of the rows in the dataframe and fills the 
+            Goodreads ID, description, rating and Num ratings. This is then
+            saved to an output CSV file."""
             for index, row in self.df.iterrows():
                
                 try:
@@ -57,7 +57,7 @@ class AccessGoodReads:
                     self.df.loc[index,'Rating'] = book.average_rating
                     self.df.loc[index,'Num Ratings'] = book.ratings_count
                     self.df.loc[index,'Pages'] = book.num_pages
-                    
+                    self.df.loc[index,'Publication Date'] = book.publication_date  
                 except:
                     print('Trouble processing', row['Title'])
             
@@ -65,19 +65,20 @@ class AccessGoodReads:
                 self.__saveDataFrame()
         
         else:
-            self.df = pd.read_csv(self.OutputFile)
+            self.df = pd.read_csv(self.OutputFile,index_col='Number')
+            self.df.drop(self.df.columns[0],inplace=True,axis=1)
         
-        self.df.Score = pd.to_numeric(DF.Score)
+        self.df.Score = pd.to_numeric(self.df.Score)
 
         return self.df
 
     # Function which saves to a CSV file at the name OutputFile
-    def saveDataFrame(self):
+    def __saveDataFrame(self):
         self.df.to_csv(self.OutputFile)
     
-    # Iterates over each row in the dataframe and checks if the number of pages
-    # is an available input. If not, it determines that the info isn't populated,
-    # so it fills in all the empty areas.
+    """Iterates over each row in the dataframe and checks if the number of pages
+    is an available input. If not, it determines that the info isn't populated,
+    so it fills in all the empty areas."""
     def populateEmpty(self):
         
         self.loadGoodReads()
@@ -87,8 +88,8 @@ class AccessGoodReads:
             if pd.isnull(row['Pages']):
                 books = self.gc.search_books(row['Title'])
                 
-                # Iterates over the first ten search results, and asks the user
-                # if it is the correct book title.
+                """Iterates over the first ten search results, and asks the user
+                if it is the correct book title."""
                 for i in range(0,10):
                     isTitle = input('Is this the correct title? (y/n)\n'+str(books[i])+'\n')
                     if isTitle=='y':
@@ -99,6 +100,7 @@ class AccessGoodReads:
                         self.df.loc[index,'Description'] = books[i].description
                         self.df.loc[index,'Rating'] = books[i].average_rating
                         self.df.loc[index,'Num Ratings'] = books[i].ratings_count
+                        self.df.loc[index,'Publication Date'] = books[i].publication_date
                         print(row)
                         break
                     else:
@@ -107,10 +109,3 @@ class AccessGoodReads:
             self.saveDataFrame()
         
         return self.df
-        
-SPREADSHEET_ID = '1OwfIKyqPnVan0Ab8H7ztstXxqfu-wI4oFnds_AUoP-4'
-RANGE_NAME = 'A1:I3000'
-
-AGR = AccessGoodReads(SPREADSHEET_ID,RANGE_NAME,'Final Data.csv')
-DF = AGR.loadGoodReads()
-DF = AGR.populateEmpty()
