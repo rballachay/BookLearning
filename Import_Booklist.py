@@ -17,7 +17,7 @@ import pandas as pd
 import logging
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format="%(asctime)s:%(levelname)s:%(message)s"
     )
 
@@ -83,7 +83,7 @@ class GoogleSheetsReader:
                                     range=self.RANGE).execute()
         return result
     
-    def gsheet2df(self):
+    def Sheet2DF(self):
         """ Converts Google sheet data to a Pandas DataFrame.
         Note: This script assumes that your data contains a header file on the first row!
         Also note that the Google API returns 'none' from empty cells - in order for the code
@@ -108,7 +108,33 @@ class GoogleSheetsReader:
                         column_data.append(np.nan)
                 ds = pd.Series(data=column_data, name=col_name)
                 all_data.append(ds)
-            df = pd.concat(all_data, axis=1)
-        return df
+            self.df = pd.concat(all_data, axis=1)
+        return self.df
+    
+    
+    def Summarize(self):
+        """ Method for analysing and summarizing the properties of the
+        Google sheet data. Can be used to understand what data is taking
+        up the largest amount of memory"""
         
-
+        # Checks to see if the dataframe exists, otherwise calls
+        # the function which creates it without alerting the user
+        if not(hasattr(self,'df')):
+            self.df = Sheet2DF()
+        
+        # Print the header for the pandas dataframe
+        print(self.df[self.df.columns.to_list()[1:-1]].head())
+        print("\n\n")
+        
+        # Get the custom variable info from the dataframe
+        uAuth = self.df['Author'].nunique()
+        num = self.df.shape[0]
+        numRead = self.df['Author'].value_counts()[:1].values.tolist()[0]
+        popAuth = str(self.df["Author"].mode()[0])
+        
+        # Print all the custom variables from the dataframe
+        print("Read a total of %i books" % num)
+        print("Since " + self.df['Date Read'][0]+"\n")
+        print("A total of %i different authors" % uAuth)
+        print("Your most popular author is " + popAuth)
+        print("With a total of %i of books read" % numRead)
