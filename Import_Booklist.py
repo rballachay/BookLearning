@@ -111,15 +111,4 @@ class GoogleSheetsReader:
             df = pd.concat(all_data, axis=1)
         return df
         
- 
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = '1OwfIKyqPnVan0Ab8H7ztstXxqfu-wI4oFnds_AUoP-4'
-RANGE_NAME = 'A1:I3000'
-
-# Read Google Sheet and pass into pandas dataframe
-Sheet = GoogleSheetsReader(SPREADSHEET_ID,RANGE_NAME)
-df = Sheet.gsheet2df()
-
-print('Dataframe size = ', df.shape)
-print(df.head())
 
