@@ -48,7 +48,7 @@ class VisualizeBookData:
         sns.catplot(x='Topic',y='Pages',data=self.DF,kind='violin',aspect=2)
         plt.show()        
         
-        return self.DF
+        return
 
     """Returns three different plots based on time read
     data.The first plot contains the average Goodreads 
@@ -95,7 +95,7 @@ class VisualizeBookData:
         plt.ylabel('Number of Pages Read')
         plt.show()         
         
-        return self.DF
+        return 
     
     """ Function which converts the date from format string 
     and year number to the format YYYY/MM/DD, where DD is 
